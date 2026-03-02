@@ -1,0 +1,155 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.1",
+    "lastTouchedAt": "2026-03-02T12:00:39.137Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-03-02T01:12:16.641Z",
+    "lastRunVersion": "2026.2.26",
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "update": {
+    "channel": "stable",
+    "checkOnStart": true,
+    "auto": {
+      "stableDelayHours": 6
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "bailian": {
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "apiKey": "sk-sp-10f48e26ce354c59b083cbe9d711d5af",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen3.5-plus",
+            "name": "qwen3.5-plus",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 262144,
+            "maxTokens": 65536
+          },
+          {
+            "id": "glm-5",
+            "name": "glm-5",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 262144,
+            "maxTokens": 65536
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "bailian/qwen3.5-plus"
+      },
+      "models": {
+        "bailian/qwen3.5-plus": {
+          "alias": "qwen3.5-plus"
+        },
+        "bailian/glm-5": {
+          "alias": "glm-5"
+        }
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    },
+    "list": [
+      {
+        "id": "main"
+      }
+    ]
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "session-memory": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "appId": "cli_a915bb13dfb89bd6",
+      "appSecret": "5FTvQApGhGSXiPmVDWjqsdDNx2GDLWF5",
+      "domain": "feishu"
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "e4c7e95a2d06f3dbf9dd26fc772cec50c95b65405b4c9c2e"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    },
+    "nodes": {
+      "denyCommands": [
+        "camera.snap",
+        "camera.clip",
+        "screen.record",
+        "calendar.add",
+        "contacts.add",
+        "reminders.add"
+      ]
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    }
+  },
+  "plugins": {
+    "allow": [
+      "feishu"
+    ],
+    "entries": {
+      "feishu": {
+        "enabled": true
+      }
+    }
+  }
+}
