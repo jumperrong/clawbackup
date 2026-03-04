@@ -1,0 +1,44 @@
+# OpenClaw Workspace .gitignore
+
+# 敏感信息（如果包含密钥等）
+# .env
+# *secrets*
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node.js
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 备份目录外的临时备份
+*.tgz
+!backups/*.tgz
+
+# 大型媒体文件（可选）
+# *.mp4
+# *.mov
+# *.mp3
