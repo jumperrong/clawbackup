@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.openclaw.daily-update-check</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/jumpermac/.openclaw/workspace/scripts/daily-update-check.sh</string>
+    </array>
+    
+    <key>StandardOutPath</key>
+    <string>/Users/jumpermac/.openclaw/workspace/logs/daily-update.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/Users/jumpermac/.openclaw/workspace/logs/daily-update.log</string>
+    
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

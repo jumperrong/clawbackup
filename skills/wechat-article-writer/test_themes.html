@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>主题测试</title>
+<style>
+:root { --primary: #ff6b6b; }
+[data-theme="medical"] { --primary: #07c160; }
+[data-theme="tech"] { --primary: #1890ff; }
+.box { 
+    padding: 20px; 
+    background: var(--primary); 
+    color: white; 
+    margin: 10px 0;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+<h1>主题切换测试</h1>
+<div class="box" onclick="setTheme('default')">🔴 经典红</div>
+<div class="box" onclick="setTheme('medical')">🟢 医疗绿</div>
+<div class="box" onclick="setTheme('tech')">🔵 科技蓝</div>
+<script>
+function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    console.log('主题已切换为:', t);
+}
+</script>
+</body>
+</html>
