@@ -11,6 +11,7 @@ import re
 import json
 import requests
 from datetime import datetime
+from openai import OpenAI
 
 def load_config():
     config_path = os.path.join(os.path.dirname(__file__), '..', 'config.json')
