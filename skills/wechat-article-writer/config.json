@@ -6,6 +6,6 @@
   "fast_model": "glm-4.7",
   "agent_model": "glm-5",
   "doubao_api_key": "ed9137d1-b82e-4ca9-b6ee-a1bd32fa9cd2",
-  "wechat_appid": "your-wechat-appid-here",
-  "wechat_appsecret": "your-wechat-appsecret-here"
+  "wechat_appid": "wx6211e097a5ed2c87",
+  "wechat_appsecret": "f550525da1d55dd4e324bcc76aa4787b"
 }
