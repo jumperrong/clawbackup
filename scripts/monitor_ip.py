@@ -78,27 +78,59 @@ def send_notify(new_ip, old_ip):
     print(f"📬 通知已写入：{NOTIFY_FILE}")
     print("\n" + message)
 
+def test_wechat_api():
+    """测试微信 API 连接"""
+    config_path = os.path.join(os.path.dirname(__file__), '..', 'skills', 'wechat-article-writer', 'config.json')
+    
+    if not os.path.exists(config_path):
+        return None, "配置文件不存在"
+    
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    
+    appid = config['wechat_appid']
+    appsecret = config['wechat_appsecret']
+    
+    url = f'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={appid}&secret={appsecret}'
+    
+    try:
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        
+        if 'access_token' in data:
+            return True, "微信 API 连接成功"
+        else:
+            return False, f"微信 API 错误：{data.get('errmsg', '未知')}"
+    except Exception as e:
+        return False, f"微信 API 请求失败：{e}"
+
 def main():
     print("="*60)
-    print("🌐 公网 IP 监控")
+    print("🌐 公网 IP 监控（增强版）")
     print("="*60)
     print()
     
-    # 获取当前 IP
+    # 1. 获取当前公网 IP
     current_ip = get_public_ip()
     
     if not current_ip:
         print("❌ 无法获取公网 IP")
         return
     
-    # 读取上次记录的 IP
+    # 2. 测试微信 API
+    print("🔍 测试微信 API 连接...")
+    wechat_ok, wechat_msg = test_wechat_api()
+    print(f"📊 微信 API: {wechat_msg}")
+    print()
+    
+    # 3. 读取上次记录的 IP
     last_ip = load_last_ip()
     
     print(f"📊 上次记录 IP: {last_ip if last_ip else '无记录'}")
     print(f"📊 当前公网 IP: {current_ip}")
     print()
     
-    # 检测 IP 是否变化
+    # 4. 检测 IP 是否变化
     if last_ip and current_ip != last_ip:
         print("⚠️  IP 发生变化！")
         print()
@@ -118,6 +150,17 @@ def main():
             print("✅ IP 未发生变化")
         
         print("\n✅ IP 监控完成")
+    
+    # 5. 总结
+    print()
+    print("="*60)
+    print("📋 总结")
+    print("="*60)
+    if wechat_ok:
+        print("✅ 微信 API 正常，可以发布文章")
+    else:
+        print(f"⚠️  微信 API 异常：{wechat_msg}")
+        print("📝 可能需要在微信后台更新 IP 白名单")
 
 if __name__ == "__main__":
     main()
