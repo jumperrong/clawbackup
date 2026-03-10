@@ -82,6 +82,55 @@ data = {
 
 ---
 
+### 4. 配图规则（重要！）
+
+**配图数量：** 3-5 张智能配图
+
+**配图位置：**
+- 每个## 标题后插入 1 张配图
+- 前 3 个章节必须配图
+
+**配图要求：**
+- ✅ AI 生成提示词（qwen3.5-plus）
+- ✅ 豆包 Seedream 4.5 生图
+- ✅ 自动添加标签便于复用
+- ✅ 专业医疗风格
+
+**⚠️ 关键步骤：图片必须上传到微信素材库**
+
+```python
+# 1. 提取文章中的图片路径
+image_pattern = r'!\[.*?\]\((.*?)\)'
+image_paths = re.findall(image_pattern, md_content)
+
+# 2. 上传每张图片到微信素材库
+upload_url = f'https://api.weixin.qq.com/cgi-bin/material/add_material?access_token={token}&type=image'
+
+image_map = {}
+for img_path in image_paths:
+    with open(img_path, 'rb') as f:
+        files = {'media': f}
+        response = requests.post(upload_url, files=files, timeout=30)
+        result = response.json()
+    
+    if 'url' in result:
+        # 获取 CDN URL（去掉参数）
+        cdn_url = result['url'].split('?')[0]
+        image_map[img_path] = cdn_url
+
+# 3. 转换 HTML 并替换图片路径
+html_content = markdown.markdown(md_content, extensions=['extra', 'codehilite'])
+
+for local_path, cdn_url in image_map.items():
+    html_content = html_content.replace(local_path, cdn_url)
+```
+
+**原因：**
+- ❌ 微信后台无法访问本地路径（`/Users/jumpermac/...`）
+- ✅ 必须使用微信 CDN URL（`http://mmbiz.qpic.cn/...`）
+
+---
+
 ### 4. 配图规则
 
 **配图数量：** 3-5 张智能配图
@@ -125,6 +174,22 @@ for section in sections[:3]:
 - ✅ 高清、精美
 - ✅ 压缩到 100KB 以内
 
+**上传封面图：**
+
+```python
+# 上传封面图到素材库
+upload_url = f'https://api.weixin.qq.com/cgi-bin/material/add_material?access_token={token}&type=image'
+
+with open(cover_path, 'rb') as f:
+    files = {'media': f}
+    response = requests.post(upload_url, files=files, timeout=30)
+    result = response.json()
+
+thumb_media_id = result['media_id']
+```
+
+**注意：** media_id 会过期，每次发布前重新上传
+
 ---
 
 ## 🔧 发布流程
@@ -156,18 +221,65 @@ python3 scripts/generate_image.py \
   --style "干货"
 ```
 
-### 步骤 4：发布到草稿箱
+### 步骤 4：发布到草稿箱（完整流程）
 
-```bash
-python3 scripts/publish_fixed.py
+**关键：必须上传图片到微信素材库并替换 URL**
+
+```python
+import requests
+import json
+import markdown
+import re
+
+# 1. 获取 access_token
+token = get_access_token()
+
+# 2. 读取文章并提取图片
+with open(article_path, 'r', encoding='utf-8') as f:
+    md_content = f.read()
+
+image_paths = re.findall(r'!\[.*?\]\((.*?)\)', md_content)
+
+# 3. 上传所有图片到微信素材库
+upload_url = f'https://api.weixin.qq.com/cgi-bin/material/add_material?access_token={token}&type=image'
+image_map = {}
+
+for img_path in image_paths:
+    with open(img_path, 'rb') as f:
+        files = {'media': f}
+        response = requests.post(upload_url, files=files, timeout=30)
+        result = response.json()
+    
+    if 'url' in result:
+        cdn_url = result['url'].split('?')[0]
+        image_map[img_path] = cdn_url
+
+# 4. 转换 HTML 并替换图片 URL
+html_content = markdown.markdown(md_content, extensions=['extra', 'codehilite'])
+for local_path, cdn_url in image_map.items():
+    html_content = html_content.replace(local_path, cdn_url)
+
+# 5. 发布到草稿箱
+draft_url = f'https://api.weixin.qq.com/cgi-bin/draft/add?access_token={token}'
+
+data = {
+    'articles': [{
+        'title': short_title,  # 25 字以内
+        'author': '运动康复小专家',  # 8 字以内
+        'digest': '臀肌挛缩与髂胫束综合征科普',  # 50 字以内
+        'content': html_content,  # 包含微信 CDN 图片 URL
+        'thumb_media_id': thumb_media_id,
+        'show_cover_pic': 1
+    }]
+}
+
+response = requests.post(
+    draft_url,
+    data=json.dumps(data, ensure_ascii=False).encode('utf-8'),
+    headers={'Content-Type': 'application/json; charset=utf-8'},
+    timeout=30
+)
 ```
-
-**发布参数：**
-- 标题：8-10 字
-- 作者：`4S 运动康复`
-- 摘要：4-8 字
-- 内容：包含 3-5 张配图
-- 封面图：已上传
 
 ---
 
@@ -219,54 +331,57 @@ with open(cover_path, 'rb') as f:
 
 ---
 
-## 📝 文章模板
+## 📝 完整发布示例
 
-### 标准结构
+### 标准文章结构
 
 ```markdown
-# 文章标题（25 字以内，用于生成短标题）
+# 徒步后膝盖外侧疼痛？可能是臀肌挛缩导致的髂胫束综合征
 
 引言段落...
 
-## 一、什么是 XXX？
+## 一、什么是髂胫束综合征（ITBS）？
 
-![配图 1](path/to/image1.jpg)
-
-内容...
-
-## 二、XXX 的原因
-
-![配图 2](path/to/image2.jpg)
+![配图 1](/Users/jumpermac/.../section_xxx.jpg)
 
 内容...
 
-## 三、解决方案
+## 二、臀肌挛缩才是幕后推手
 
-![配图 3](path/to/image3.jpg)
+![配图 2](/Users/jumpermac/.../section_xxx.jpg)
+
+内容...
+
+## 三、四步解决方案
+
+![配图 3](/Users/jumpermac/.../section_xxx.jpg)
 
 内容...
 ```
 
-### 发布时的标题处理
+### 发布前处理
+
+**必须完成的步骤：**
+
+1. ✅ 提取文章中的所有图片路径
+2. ✅ 上传每张图片到微信素材库
+3. ✅ 获取微信 CDN URL
+4. ✅ 替换 HTML 中的本地路径为 CDN URL
+5. ✅ 使用正确的编码发布
+
+**关键代码：**
 
 ```python
-# 原标题
-full_title = "徒步后膝盖外侧疼痛？可能是臀肌挛缩导致的髂胫束综合征"
+# 替换图片路径
+for local_path, cdn_url in image_map.items():
+    html_content = html_content.replace(local_path, cdn_url)
 
-# 生成短标题（10 字以内）
-short_title = "徒步后膝外侧疼痛"  # 8 字
-
-# 发布
-data = {
-    'articles': [{
-        'title': short_title,  # 使用短标题
-        'author': '4S 运动康复',
-        'digest': '康复指南',
-        'content': html_content,
-        'thumb_media_id': thumb_media_id,
-        'show_cover_pic': 1
-    }]
-}
+# 使用 ensure_ascii=False
+response = requests.post(
+    draft_url,
+    data=json.dumps(data, ensure_ascii=False).encode('utf-8'),
+    headers={'Content-Type': 'application/json; charset=utf-8'}
+)
 ```
 
 ---
@@ -281,18 +396,18 @@ data = {
 - ✅ `臀肌挛缩康复指南`（7 字）
 
 **避免：**
-- ❌ 过长标题（超过 10 字）
+- ❌ 过长标题（超过 25 字）
 - ❌ 复杂标点符号
 - ❌ 模糊不清的描述
 
 ### 2. 作者名统一
 
-**统一使用：** `4S 运动康复`
+**统一使用：** `运动康复小专家`（7 字）
 
 **原因：**
-- ✅ 符合 7 字限制
-- ✅ 品牌识别度高
+- ✅ 符合 8 字限制
 - ✅ 专业性强
+- ✅ 亲和力好
 
 ### 3. 配图质量
 
@@ -301,6 +416,32 @@ data = {
 - ✅ 医学插图风格
 - ✅ 色调温暖、明亮
 - ✅ 自动标签便于复用
+
+### 4. 图片上传（关键！）
+
+**⚠️ 必须完成的步骤：**
+
+1. ✅ 提取文章中的所有图片路径
+2. ✅ 上传每张图片到微信素材库
+3. ✅ 获取微信 CDN URL（`http://mmbiz.qpic.cn/...`）
+4. ✅ 替换 HTML 中的本地路径
+5. ✅ 验证替换后的 URL 格式
+
+**❌ 错误做法：**
+```python
+# 直接使用本地路径发布
+html_content = markdown.markdown(md_content)
+# 发布 → 微信后台无法显示图片
+```
+
+**✅ 正确做法：**
+```python
+# 上传并替换为 CDN URL
+for img_path in image_paths:
+    cdn_url = upload_to_wechat(img_path)
+    html_content = html_content.replace(img_path, cdn_url)
+# 发布 → 微信后台可以正常显示
+```
 
 ---
 
@@ -314,6 +455,21 @@ data = {
 | **45004** | description size out of limit | 摘要超限 | 缩短到 50 字以内 |
 | **45110** | author size out of limit | 作者名超限 | 缩短到 8 字以内 |
 | **40007** | invalid media_id | media_id 失效 | 重新上传图片 |
+| **图片不显示** | 无错误 | 使用本地路径 | 上传到微信素材库并替换 URL |
+
+### 发布检查清单
+
+**发布前必须确认：**
+
+- [ ] 标题 25 字以内
+- [ ] 作者 8 字以内
+- [ ] 摘要 50 字以内
+- [ ] 3-5 张配图已生成
+- [ ] **所有图片已上传到微信素材库**
+- [ ] **HTML 中的图片路径已替换为 CDN URL**
+- [ ] 封面图已上传并获取 media_id
+- [ ] 使用 `ensure_ascii=False` 编码
+- [ ] 设置 `Content-Type: application/json; charset=utf-8`
 
 ---
 
