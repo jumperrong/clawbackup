@@ -58,7 +58,40 @@ def analyze_article_topic(title: str, content: str = "") -> dict:
     cover_prompt = cover_generator.generate_prompt(title, cover_theme)
     
     # 4. 识别需要验证的内容
-    facts_to_verify = validator.identify_facts_to_verify(content) if content else []
+    facts_to_verify = []
+    verification_results = []
+    
+    if content:
+        facts_to_verify = validator.identify_facts_to_verify(content)
+        
+        # 如果有 Tavily API Key，自动验证
+        from config_loader import get_config
+        config = get_config()
+        
+        if config.is_configured('tavily_api_key') and facts_to_verify:
+            try:
+                from tavily import TavilyClient
+                client = TavilyClient(api_key=config.get('tavily_api_key'))
+                
+                for fact in facts_to_verify[:5]:  # 最多验证 5 个
+                    try:
+                        response = client.search(fact['text'], max_results=2)
+                        verified = len(response.get('results', [])) > 0
+                        verification_results.append({
+                            'fact': fact['text'],
+                            'verified': verified,
+                            'sources': [r.get('url') for r in response.get('results', [])[:2]]
+                        })
+                    except Exception as e:
+                        verification_results.append({
+                            'fact': fact['text'],
+                            'verified': None,  # 无法验证
+                            'error': str(e)
+                        })
+            except ImportError:
+                pass  # Tavily 未安装
+            except Exception as e:
+                pass  # 验证失败
     
     return {
         'keywords': keywords,
@@ -70,6 +103,7 @@ def analyze_article_topic(title: str, content: str = "") -> dict:
         },
         'cover_prompt': cover_prompt,
         'facts_to_verify': facts_to_verify,
+        'verification_results': verification_results,
         'verification_needed': len(facts_to_verify) > 0
     }
 
@@ -152,10 +186,20 @@ def print_analysis(result: dict):
     
     if result['verification_needed']:
         print(f"\n⚠️  需要验证的内容:")
-        for fact in result['facts_to_verify'][:5]:
-            print(f"   - {fact['text']} ({fact['type']})")
-        if len(result['facts_to_verify']) > 5:
-            print(f"   ... 还有 {len(result['facts_to_verify']) - 5} 项")
+        
+        # 显示验证结果（如果有）
+        if result.get('verification_results'):
+            for vr in result['verification_results']:
+                status = "✅" if vr['verified'] else ("❌" if vr['verified'] == False else "⚠️")
+                print(f"   {status} {vr['fact']}")
+                if vr.get('sources'):
+                    for src in vr['sources'][:2]:
+                        print(f"      来源：{src}")
+        else:
+            for fact in result['facts_to_verify'][:5]:
+                print(f"   - {fact['text']} ({fact['type']})")
+            if len(result['facts_to_verify']) > 5:
+                print(f"   ... 还有 {len(result['facts_to_verify']) - 5} 项")
     else:
         print(f"\n✅ 无需特别验证的内容")
     
