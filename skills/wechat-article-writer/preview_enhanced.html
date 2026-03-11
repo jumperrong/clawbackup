@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信公众号文章预览 - 增强版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .controls {
+            max-width: 800px;
+            margin: 0 auto 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        select, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background: #07c160;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        button:hover {
+            background: #06ad56;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header-cover {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        
+        .meta {
+            display: flex;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+        
+        .author-info {
+            flex: 1;
+        }
+        
+        .author-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .publish-time {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .article-body {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+        }
+        
+        .article-body h2 {
+            font-size: 20px;
+            margin: 30px 0 15px;
+            font-weight: 600;
+        }
+        
+        .article-body p {
+            margin-bottom: 20px;
+        }
+        
+        .article-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .stats {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .theme-info {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+        
+        .theme-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #07c160;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .error {
+            background: #fff3f3;
+            color: #d32f2f;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="control-group">
+            <label>📄 选择文章</label>
+            <select id="articleSelect" onchange="loadArticle()">
+                <option value="">请选择文章...</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label>🎨 选择主题</label>
+            <select id="themeSelect" onchange="applyTheme()">
+                <optgroup label="经典主题">
+                    <option value="minimal_business">极简商务</option>
+                    <option value="tech_modern">科技现代</option>
+                    <option value="warm_artistic" selected>温暖文艺</option>
+                    <option value="fresh_lively">活泼清新</option>
+                    <option value="magazine_premium">杂志高级</option>
+                    <option value="academic_professional">学术专业</option>
+                    <option value="data_analytics">数据洞察</option>
+                    <option value="cozy_lifestyle">舒适生活</option>
+                    <option value="creative_bold">创意大胆</option>
+                    <option value="energetic_youth">青春活力</option>
+                    <option value="nature_fresh">自然清新</option>
+                    <option value="retro_classic">复古经典</option>
+                    <option value="geek_tech">极客科技</option>
+                </optgroup>
+                <optgroup label="马卡龙主题">
+                    <option value="macaron_pink">马卡龙粉</option>
+                    <option value="macaron_blue">马卡龙蓝</option>
+                    <option value="macaron_mint">马卡龙薄荷</option>
+                    <option value="macaron_lavender">马卡龙薰衣草</option>
+                    <option value="macaron_peach">马卡龙蜜桃</option>
+                    <option value="macaron_lemon">马卡龙柠檬</option>
+                    <option value="macaron_coral">马卡龙珊瑚</option>
+                    <option value="macaron_sage">马卡龙鼠尾草</option>
+                    <option value="macaron_lilac">马卡龙丁香</option>
+                    <option value="macaron_cream">马卡龙奶油</option>
+                    <option value="macaron_sky">马卡龙天空</option>
+                    <option value="macaron_rose">马卡龙玫瑰</option>
+                </optgroup>
+            </select>
+            <button onclick="exportTheme()">导出此主题</button>
+        </div>
+        
+        <div class="control-group">
+            <label>📊 文章信息</label>
+            <div id="articleInfo" class="theme-info">
+                选择文章后显示详细信息
+            </div>
+        </div>
+    </div>
+    
+    <div class="container" id="previewContainer">
+        <div class="loading">请选择文章开始预览</div>
+    </div>
+    
+    <script>
+        let articles = [];
+        let currentArticle = null;
+        
+        // 主题样式配置
+        const themeStyles = {
+            minimal_business: { primary: '#2c3e50', bg: '#ecf0f1', border: '3px solid #2c3e50' },
+            tech_modern: { primary: '#2563eb', bg: '#f1f5f9', border: '3px solid #2563eb' },
+            warm_artistic: { primary: '#d4a574', bg: '#fef9f3', border: '3px solid #d4a574' },
+            fresh_lively: { primary: '#10b981', bg: '#ecfdf5', border: '3px solid #10b981' },
+            magazine_premium: { primary: '#c0a080', bg: '#faf8f6', border: '3px solid #c0a080' },
+            academic_professional: { primary: '#1e40af', bg: '#eff6ff', border: '3px solid #1e40af' },
+            data_analytics: { primary: '#7c3aed', bg: '#f5f3ff', border: '3px solid #7c3aed' },
+            cozy_lifestyle: { primary: '#ea580c', bg: '#fff7ed', border: '3px solid #ea580c' },
+            creative_bold: { primary: '#dc2626', bg: '#fef2f2', border: '3px solid #dc2626' },
+            energetic_youth: { primary: '#f59e0b', bg: '#fffbeb', border: '3px solid #f59e0b' },
+            nature_fresh: { primary: '#059669', bg: '#f0fdf4', border: '3px solid #059669' },
+            retro_classic: { primary: '#92400e', bg: '#fffbeb', border: '3px solid #92400e' },
+            geek_tech: { primary: '#6366f1', bg: '#eef2ff', border: '3px solid #6366f1' },
+            macaron_pink: { primary: '#f472b6', bg: '#fce7f3', border: '3px solid #f472b6' },
+            macaron_blue: { primary: '#60a5fa', bg: '#dbeafe', border: '3px solid #60a5fa' },
+            macaron_mint: { primary: '#34d399', bg: '#d1fae5', border: '3px solid #34d399' },
+            macaron_lavender: { primary: '#a78bfa', bg: '#ede9fe', border: '3px solid #a78bfa' },
+            macaron_peach: { primary: '#fb923c', bg: '#ffedd5', border: '3px solid #fb923c' },
+            macaron_lemon: { primary: '#fbbf24', bg: '#fef3c7', border: '3px solid #fbbf24' },
+            macaron_coral: { primary: '#f87171', bg: '#fee2e2', border: '3px solid #f87171' },
+            macaron_sage: { primary: '#34d399', bg: '#d1fae5', border: '3px solid #34d399' },
+            macaron_lilac: { primary: '#c084fc', bg: '#f3e8ff', border: '3px solid #c084fc' },
+            macaron_cream: { primary: '#fcd34d', bg: '#fef3c7', border: '3px solid #fcd34d' },
+            macaron_sky: { primary: '#38bdf8', bg: '#e0f2fe', border: '3px solid #38bdf8' },
+            macaron_rose: { primary: '#fb7185', bg: '#ffe4e6', border: '3px solid #fb7185' }
+        };
+        
+        // 加载文章列表
+        async function loadArticleList() {
+            try {
+                const response = await fetch('output/articles/list.json');
+                if (response.ok) {
+                    articles = await response.json();
+                } else {
+                    // 如果 list.json 不存在，尝试扫描目录
+                    articles = await scanArticles();
+                }
+                
+                const select = document.getElementById('articleSelect');
+                articles.forEach((article, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${article.title.substring(0, 30)}... (${article.words || 0}字)`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('加载文章列表失败:', error);
+                // 添加示例文章
+                articles = [
+                    { title: '示例文章', file: 'article_20260309_225017.md', words: 2659 },
+                    { title: '示例文章 2', file: 'article_20260309_230714.md', words: 2949 }
+                ];
+                const select = document.getElementById('articleSelect');
+                articles.forEach((article, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = article.title;
+                    select.appendChild(option);
+                });
+            }
+        }
+        
+        // 扫描文章目录
+        async function scanArticles() {
+            // 这里需要后端支持，暂时返回空数组
+            return [];
+        }
+        
+        // 加载文章
+        async function loadArticle() {
+            const select = document.getElementById('articleSelect');
+            const index = select.value;
+            
+            if (index === '') {
+                document.getElementById('previewContainer').innerHTML = '<div class="loading">请选择文章开始预览</div>';
+                currentArticle = null;
+                return;
+            }
+            
+            currentArticle = articles[index];
+            
+            try {
+                const response = await fetch(`output/articles/${currentArticle.file}`);
+                const markdown = await response.text();
+                
+                // 解析 Markdown（简化版）
+                const html = parseMarkdown(markdown);
+                
+                renderPreview(html);
+                updateArticleInfo();
+            } catch (error) {
+                document.getElementById('previewContainer').innerHTML = `
+                    <div class="error">加载文章失败：${error.message}</div>
+                `;
+            }
+        }
+        
+        // 解析 Markdown
+        function parseMarkdown(markdown) {
+            let html = markdown;
+            
+            // 标题
+            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            
+            // 粗体
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // 图片
+            html = html.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1">');
+            
+            // 段落
+            html = html.split(/\n\n/).map(p => {
+                if (p.startsWith('<h') || p.startsWith('<img')) return p;
+                return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+            }).join('');
+            
+            return html;
+        }
+        
+        // 渲染预览
+        function renderPreview(content) {
+            const theme = document.getElementById('themeSelect').value;
+            const style = themeStyles[theme];
+            
+            document.getElementById('previewContainer').innerHTML = `
+                <img class="header-cover" src="output/images/cover_header.jpg" alt="封面" onerror="this.style.display='none'">
+                <div class="content">
+                    <div class="meta">
+                        <img class="avatar" src="https://via.placeholder.com/40" alt="头像">
+                        <div class="author-info">
+                            <div class="author-name">运动康复小专家</div>
+                            <div class="publish-time">${new Date().toLocaleDateString('zh-CN')}</div>
+                        </div>
+                    </div>
+                    
+                    <h1 class="title">${currentArticle.title}</h1>
+                    
+                    <div class="article-body" style="--theme-primary: ${style.primary}; --theme-bg: ${style.bg}">
+                        ${content}
+                    </div>
+                    
+                    <div class="stats">
+                        <span>📊 ${currentArticle.words || 0} 字</span>
+                        <span>🎨 主题：${theme}</span>
+                        <span>📅 生成时间：${currentArticle.created_at || '未知'}</span>
+                    </div>
+                    
+                    <div class="theme-info">
+                        <strong>当前主题：</strong>${getThemeName(theme)}
+                        <span class="theme-badge" style="background: ${style.primary}">${theme}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 应用主题
+        function applyTheme() {
+            if (currentArticle) {
+                loadArticle();
+            }
+        }
+        
+        // 获取主题名称
+        function getThemeName(themeId) {
+            const names = {
+                minimal_business: '极简商务',
+                tech_modern: '科技现代',
+                warm_artistic: '温暖文艺',
+                fresh_lively: '活泼清新',
+                magazine_premium: '杂志高级',
+                academic_professional: '学术专业',
+                data_analytics: '数据洞察',
+                cozy_lifestyle: '舒适生活',
+                creative_bold: '创意大胆',
+                energetic_youth: '青春活力',
+                nature_fresh: '自然清新',
+                retro_classic: '复古经典',
+                geek_tech: '极客科技',
+                macaron_pink: '马卡龙粉',
+                macaron_blue: '马卡龙蓝',
+                macaron_mint: '马卡龙薄荷',
+                macaron_lavender: '马卡龙薰衣草',
+                macaron_peach: '马卡龙蜜桃',
+                macaron_lemon: '马卡龙柠檬',
+                macaron_coral: '马卡龙珊瑚',
+                macaron_sage: '马卡龙鼠尾草',
+                macaron_lilac: '马卡龙丁香',
+                macaron_cream: '马卡龙奶油',
+                macaron_sky: '马卡龙天空',
+                macaron_rose: '马卡龙玫瑰'
+            };
+            return names[themeId] || themeId;
+        }
+        
+        // 更新文章信息
+        function updateArticleInfo() {
+            const info = document.getElementById('articleInfo');
+            info.innerHTML = `
+                <strong>标题：</strong>${currentArticle.title}<br>
+                <strong>字数：</strong>${currentArticle.words || 0} 字<br>
+                <strong>文件：</strong>${currentArticle.file}<br>
+                <strong>推荐主题：</strong>${currentArticle.recommended_theme || 'warm_artistic'}
+            `;
+        }
+        
+        // 导出主题
+        function exportTheme() {
+            if (!currentArticle) {
+                alert('请先选择文章');
+                return;
+            }
+            
+            const theme = document.getElementById('themeSelect').value;
+            alert(`将导出 ${getThemeName(theme)} 主题的文章到微信公众号草稿箱\n\n（此功能需要配置微信 API）`);
+        }
+        
+        // 初始化
+        loadArticleList();
+    </script>
+</body>
+</html>

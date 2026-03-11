@@ -4,8 +4,9 @@ config.json
 *.key
 *.pem
 
-# 输出文件
+# 输出文件（但保留 list.json）
 output/
+!output/articles/list.json
 *.log
 *.tmp
 
