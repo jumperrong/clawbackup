@@ -82,6 +82,12 @@ class NaturalLanguageInterface:
                 'action': 'preview'
             }
         
+        # 交互模式
+        if any(kw in user_input for kw in ['交互', '逐步', '一步步', '分步', '审核']):
+            return {
+                'action': 'interactive'
+            }
+        
         # 帮助
         if any(kw in user_input for kw in ['帮助', '怎么用', '如何使用', 'help']):
             return {
@@ -156,6 +162,9 @@ class NaturalLanguageInterface:
         
         elif action == 'preview':
             self._preview()
+        
+        elif action == 'interactive':
+            self._start_interactive()
         
         elif action == 'help':
             self._show_help()
@@ -335,6 +344,24 @@ class NaturalLanguageInterface:
             print("\n❌ 预览页面不存在")
         print()
     
+    def _start_interactive(self):
+        """启动交互式写作"""
+        print("\n" + "="*60)
+        print("📝 启动交互式写作模式")
+        print("="*60)
+        print("\n交互式写作模式将帮你:")
+        print("   1. 逐步确定主题和标题")
+        print("   2. 生成并修改大纲")
+        print("   3. 分步生成正文内容")
+        print("   4. 生成和调整配图提示词")
+        print("   5. 选择排版主题")
+        print("   6. 预览和导出文章")
+        print("\n每一步都可以修改和调整，确保文章符合你的要求。\n")
+        
+        from interactive_writer import InteractiveWriter
+        writer = InteractiveWriter()
+        writer.start()
+    
     def _show_help(self):
         """显示帮助信息"""
         print("\n" + "="*60)
@@ -370,6 +397,11 @@ class NaturalLanguageInterface:
 📱 预览
    • "打开预览页面"
    • "预览文章"
+
+📝 交互模式
+   • "交互式写作"
+   • "一步步生成文章"
+   • "我要逐步审核文章和配图"
 
 💡 帮助
    • "帮助"
