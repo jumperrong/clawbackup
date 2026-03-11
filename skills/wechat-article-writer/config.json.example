@@ -1,0 +1,11 @@
+{
+  "bailian_api_key": "your-bailian-api-key-here",
+  "bailian_base_url": "https://coding.dashscope.aliyuncs.com/v1",
+  "writing_model": "qwen3-max-2026-01-23",
+  "image_model": "qwen3.5-plus",
+  "fast_model": "glm-4.7",
+  "agent_model": "glm-5",
+  "doubao_api_key": "your-doubao-api-key-here",
+  "wechat_appid": "your-wechat-appid-here",
+  "wechat_appsecret": "your-wechat-appsecret-here"
+}
