@@ -106,14 +106,7 @@
       }
     }
   },
-  "channels": {
-    "feishu": {
-      "enabled": true,
-      "appId": "cli_a915bb13dfb89bd6",
-      "appSecret": "5FTvQApGhGSXiPmVDWjqsdDNx2GDLWF5",
-      "domain": "feishu"
-    }
-  },
+  "channels": {},
   "gateway": {
     "port": 18789,
     "mode": "local",
@@ -143,13 +136,7 @@
     }
   },
   "plugins": {
-    "allow": [
-      "feishu"
-    ],
-    "entries": {
-      "feishu": {
-        "enabled": true
-      }
-    }
+    "allow": [],
+    "entries": {}
   }
 }

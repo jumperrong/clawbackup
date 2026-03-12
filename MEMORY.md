@@ -42,10 +42,12 @@ _这是 curated memories， distilled essence，不是 raw logs._
 ## 📝 重要决策
 
 ### 2026-03-09
-1. **飞书插件重复注册问题** - 已修复（移除 openclaw.json 中的重复 entries）
-2. **Bonjour 冲突问题** - 接受现状，不影响核心功能
-3. **主机名修改** - jumpermac-openclaw（解决 Bonjour 冲突尝试）
-4. **微信公众号技能** - 已搭建并测试通过
+1. **Bonjour 冲突问题** - 接受现状，不影响核心功能
+2. **主机名修改** - jumpermac-openclaw（解决 Bonjour 冲突尝试）
+3. **微信公众号技能** - 已搭建并测试通过
+
+### 2026-03-12
+1. **飞书配置移除** - 完全清理飞书相关配置，只用钉钉
 
 ---
 
