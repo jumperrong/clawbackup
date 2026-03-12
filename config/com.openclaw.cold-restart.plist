@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.openclaw.cold-restart</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/jumpermac/.openclaw/workspace/scripts/cold-restart.sh</string>
+    </array>
+    
+    <key>WorkingDirectory</key>
+    <string>/Users/jumpermac/.openclaw/workspace</string>
+    
+    <key>StandardOutPath</key>
+    <string>/Users/jumpermac/.openclaw/logs/cold-restart.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/Users/jumpermac/.openclaw/logs/cold-restart-error.log</string>
+    
+    <!-- 每小时执行一次冷启动 -->
+    <key>StartInterval</key>
+    <integer>3600</integer>
+    
+    <!-- 或者使用固定时间（每天凌晨 3 点）-->
+    <!--
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>3</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    -->
+    
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

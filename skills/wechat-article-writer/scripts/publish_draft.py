@@ -17,7 +17,7 @@ def load_config():
         return json.load(f)
 
 def get_access_token(appid, appsecret):
-    """获取微信 access_token（带缓存）"""
+    """获取微信 access_token（使用 stable_token 接口）"""
     cache_file = os.path.join(os.path.dirname(__file__), 'output', 'token_cache.json')
     os.makedirs(os.path.dirname(cache_file), exist_ok=True)
     
@@ -27,8 +27,15 @@ def get_access_token(appid, appsecret):
             if datetime.now().timestamp() < cache['expires_at']:
                 return cache['token']
     
-    url = f"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={appid}&secret={appsecret}"
-    response = requests.get(url)
+    # 使用 stable_token 接口
+    url = "https://api.weixin.qq.com/cgi-bin/stable_token"
+    data = {
+        'grant_type': 'client_credential',
+        'appid': appid,
+        'secret': appsecret,
+        'force_refresh': False
+    }
+    response = requests.post(url, json=data)
     result = response.json()
     
     if 'access_token' not in result:
