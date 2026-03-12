@@ -136,7 +136,11 @@
     }
   },
   "plugins": {
-    "allow": [],
-    "entries": {}
+    "allow": ["memos-cloud-openclaw-plugin"],
+    "entries": {
+      "memos-cloud-openclaw-plugin": {
+        "enabled": true
+      }
+    }
   }
 }
