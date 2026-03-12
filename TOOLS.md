@@ -13,6 +13,19 @@ Things like:
 - Device nicknames
 - Anything environment-specific
 
+## 🔍 搜索工具配置
+
+**已启用：**
+- ✅ **Tavily Search** - 唯一使用的搜索工具
+  - API Key: `TAVILY_API_KEY` (已配置)
+  - 技能路径：`skills/tavily-search/`
+  - 用法：`node scripts/search.mjs "query"`
+
+**已禁用：**
+- ❌ **Brave Search (web_search)** - 不使用，已禁用
+  - 原因：用户明确要求只用 Tavily
+  - 行为：即使 web_search 工具可用，也不主动调用
+
 ## Examples
 
 ```markdown

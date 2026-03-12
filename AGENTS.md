@@ -207,6 +207,14 @@ Think of it like a human reviewing their journal and updating their mental model
 
 The goal: Be helpful without being annoying. Check in a few times a day, do useful background work, but respect quiet time.
 
+## 🛠️ Tools 配置
+
+### 搜索工具
+- ✅ **Tavily Search** - 唯一使用的搜索工具
+- ❌ **Brave Search (web_search)** - 禁用，不使用
+
+**规则：** 需要网络搜索时，必须优先使用 Tavily，不得调用 web_search 工具。
+
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
