@@ -8,10 +8,12 @@ set -e
 LOG_FILE="/Users/jumpermac/.openclaw/workspace/logs/github-push.log"
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 WORKSPACE="/Users/jumpermac/.openclaw/workspace"
-REPO_URL="https://github.com/YUCC-edu/wechat-allauto-gzh"
+# 使用本地已配置的 remote origin（SSH 方式），不硬编码 URL
+REMOTE_ORIGIN=$(git config --get remote.origin.url)
 
 echo "[$TIMESTAMP] ================================" | tee -a "$LOG_FILE"
 echo "[$TIMESTAMP] 开始 GitHub 推送检查..." | tee -a "$LOG_FILE"
+echo "[$TIMESTAMP] Remote: $REMOTE_ORIGIN" | tee -a "$LOG_FILE"
 
 cd "$WORKSPACE"
 
@@ -45,7 +47,7 @@ git commit -m "$COMMIT_MSG" 2>&1 | tee -a "$LOG_FILE" || {
 
 # 5. 推送到 GitHub
 echo "[$TIMESTAMP] 推送到 GitHub..." | tee -a "$LOG_FILE"
-git push "$REPO_URL" main 2>&1 | tee -a "$LOG_FILE"
+git push origin main 2>&1 | tee -a "$LOG_FILE"
 
 if [ $? -eq 0 ]; then
     echo "[$TIMESTAMP] ✅ 推送成功！" | tee -a "$LOG_FILE"
