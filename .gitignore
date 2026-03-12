@@ -1,8 +1,11 @@
 # OpenClaw Workspace .gitignore
 
-# 敏感信息（如果包含密钥等）
-# .env
-# *secrets*
+# 敏感信息
+.env
+*.meta.json
+*secret*
+*credential*
+stable_access_token.txt
 
 # 日志文件
 *.log
@@ -13,6 +16,19 @@ logs/
 *.temp
 .tmp/
 .temp/
+temp/
+
+# 媒体文件（钉钉 inbound）
+media/inbound/
+
+# 测试文件
+test-*.txt
+test-*.png
+test-*.html
+generate-test-image.py
+
+# Skills 子模块（避免嵌入仓库警告）
+skills/*/
 
 # 系统文件
 .DS_Store
