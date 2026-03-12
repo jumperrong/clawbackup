@@ -48,6 +48,7 @@ _这是 curated memories， distilled essence，不是 raw logs._
 
 ### 2026-03-12
 1. **飞书配置移除** - 完全清理飞书相关配置，只用钉钉
+2. **openclaw-dingtalk 移除** - 卸载废弃的旧钉钉插件，只用 dingtalk-connector
 
 ---
 
