@@ -52,6 +52,7 @@ class InteractiveWriter:
         self.image_manager = ImageManager(self.article_id)
         
         # 步骤 1：确定主题和标题
+        print("\n💡 提示：输入 'test' 使用测试数据快速完成流程\n")
         self._step1_topic()
         
         # 步骤 2：生成大纲
