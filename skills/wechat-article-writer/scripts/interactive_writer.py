@@ -15,6 +15,8 @@ script_dir = os.path.dirname(__file__)
 sys.path.insert(0, script_dir)
 
 from config_loader import get_config
+from session_manager import SessionManager
+from image_manager import ImageManager
 
 
 class InteractiveWriter:
@@ -22,6 +24,9 @@ class InteractiveWriter:
     
     def __init__(self):
         self.config = get_config()
+        self.article_id = None
+        self.session_manager = None
+        self.image_manager = None
         self.session = {
             'title': '',
             'topic': '',
@@ -31,6 +36,7 @@ class InteractiveWriter:
             'images': [],
             'theme': 'warm_artistic'
         }
+        self.locked = False
     
     def start(self):
         """开始交互式写作"""
@@ -39,6 +45,11 @@ class InteractiveWriter:
         print("="*60)
         print("\n欢迎使用交互式写作模式！")
         print("我会一步步帮你完成文章创作，每一步都可以修改和调整。\n")
+        
+        # 初始化会话管理器
+        self.article_id = datetime.now().strftime('%Y-%m-%d_%H%M%S')
+        self.session_manager = SessionManager(self.article_id)
+        self.image_manager = ImageManager(self.article_id)
         
         # 步骤 1：确定主题和标题
         self._step1_topic()
@@ -82,6 +93,15 @@ class InteractiveWriter:
                     print(f"⚠️  标题太长（{len(title)}字），请精简到 25 字以内")
                     continue
                 self.session['title'] = title
+                
+                # 记录到会话日志
+                self.session_manager.update_metadata('title', title)
+                self.session_manager.update_metadata('topic', topic)
+                self.session_manager.log_step('topic_selection', {
+                    'topic': topic,
+                    'title': title
+                }, confirmed=True)
+                
                 break
         
         print(f"\n✅ 已确认:")
@@ -210,18 +230,32 @@ class InteractiveWriter:
                 print("⚠️  无效操作，请重新输入\n")
     
     def _step4_images(self):
-        """步骤 4：生成配图提示词"""
+        """步骤 4：生成配图并保存"""
         print("\n" + "="*60)
-        print("🖼️  步骤 4：生成配图提示词")
+        print("🖼️  步骤 4：生成配图")
         print("="*60)
         
-        print("\n正在分析文章内容，生成配图提示词...\n")
+        print("\n正在分析文章内容，生成配图...\n")
         
         # 调用 AI 生成配图提示词
-        images = self._generate_images()
-        self.session['images'] = images
+        image_prompts = self._generate_images()
+        self.session['images'] = image_prompts
         
-        print(f"✅ 生成了 {len(images)} 个配图提示词:\n")
+        # 使用图片管理器生成并保存图片
+        print(f"✅ 生成了 {len(image_prompts)} 个配图提示词")
+        print(f"🎨 开始调用豆包 API 生成图片...\n")
+        
+        # 批量生成图片
+        generated_images = self.image_manager.batch_generate(image_prompts)
+        
+        # 记录到会话日志
+        for img in generated_images:
+            self.session_manager.update_asset('image', img['path'], img)
+        
+        self.session_manager.update_metadata('images_count', len(generated_images))
+        
+        print(f"\n✅ 配图已生成并保存：{len(generated_images)} 张")
+        print(f"📂 保存位置：{self.image_manager.image_dir}")
         
         for i, img in enumerate(images, 1):
             print(f"📷 配图 {i}:")
@@ -441,17 +475,32 @@ class InteractiveWriter:
     
     def _save_article(self):
         """保存文章"""
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"article_{timestamp}.md"
+        # 使用规范化命名
+        safe_title = self.session['title'][:20].replace('/', '_').replace('\\', '_')
+        filename = f"{self.article_id}_{safe_title}.md"
         filepath = os.path.join(script_dir, 'output', 'articles', filename)
         
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(f"# {self.session['title']}\n\n")
+            f.write(f"_创作于 {datetime.now().strftime('%Y-%m-%d %H:%M')}_\n\n")
             f.write(self.session['content'])
         
         print(f"\n✅ 文章已保存到：{filepath}")
+        
+        # 记录到会话日志
+        self.session_manager.update_asset('markdown', filepath, {
+            'words': len(self.session['content']),
+            'title': self.session['title']
+        })
+        self.session_manager.update_metadata('words', len(self.session['content']))
+        
+        # 创建版本快照
+        self.session_manager.create_version_snapshot('final')
+        
+        # 完成会话
+        self.session_manager.complete_session(locked=self.locked)
     
     def _open_preview(self):
         """打开预览页面"""
@@ -463,10 +512,67 @@ class InteractiveWriter:
         else:
             print("\n❌ 预览页面不存在")
     
+    def _simple_export(self, html_output):
+        """简单 HTML 导出"""
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{self.session['title']}</title>
+</head>
+<body>
+    <h1>{self.session['title']}</h1>
+    {self.session['content'].replace(chr(10), '<br/>')}
+</body>
+</html>
+"""
+        with open(html_output, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        print(f"✅ 简单 HTML 已导出：{html_output}")
+    
     def _export_wechat(self):
         """导出为微信格式"""
-        print("\n⚠️  微信格式导出功能开发中...")
-        print("   将使用 export_wechat.py 脚本\n")
+        print("\n" + "="*60)
+        print("📤 导出微信公众号格式")
+        print("="*60)
+        
+        # 调用 export_wechat.py
+        import subprocess
+        
+        # 先找到刚保存的 Markdown 文件
+        markdown_file = self.session_manager.get_assets()['markdown']['path']
+        html_output = os.path.join(
+            script_dir, 'output', 'drafts',
+            f"{self.article_id}_{self.session['title'][:20]}.html"
+        )
+        
+        print(f"\n🔄 正在导出 HTML...")
+        print(f"   源文件：{markdown_file}")
+        print(f"   输出：{html_output}\n")
+        
+        # 调用导出脚本
+        export_script = os.path.join(script_dir, 'export_wechat.py')
+        if os.path.exists(export_script):
+            result = subprocess.run([
+                'python3', export_script,
+                '--input', markdown_file,
+                '--output', html_output,
+                '--article-id', self.article_id
+            ], capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                print("✅ HTML 导出成功！")
+                
+                # 记录 HTML 文件到会话日志
+                self.session_manager.update_asset('html', html_output)
+                
+                print(f"\n📄 HTML 文件：{html_output}")
+            else:
+                print(f"❌ 导出失败：{result.stderr}")
+        else:
+            print("⚠️  export_wechat.py 不存在，使用基础导出")
+            # 简单导出
+            self._simple_export(html_output)
     
     def _push_wechat(self):
         """推送到微信"""

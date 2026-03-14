@@ -10,6 +10,8 @@ import os
 import json
 import requests
 from datetime import datetime
+from json import dumps
+from json import dumps
 
 def load_config():
     config_path = os.path.join(os.path.dirname(__file__), '..', 'config.json')
@@ -82,7 +84,7 @@ def add_draft(access_token, title, html_content, thumb_media_id):
         ]
     }
     
-    response = requests.post(url, json=payload)
+    response = requests.post(url, data=dumps(payload, ensure_ascii=False).encode('utf-8'), headers={'Content-Type': 'application/json; charset=utf-8'})
     result = response.json()
     
     if 'media_id' not in result:
@@ -134,12 +136,77 @@ def publish_draft(html_path, cover_image_path, title=None):
     
     return metadata
 
+def publish_by_article_id(article_id):
+    """通过文章 ID 推送"""
+    # 从索引读取文件路径
+    index_file = os.path.join(os.path.dirname(__file__), 'output', 'index.json')
+    
+    if not os.path.exists(index_file):
+        print(f"❌ 索引文件不存在：{index_file}")
+        return
+    
+    with open(index_file, 'r', encoding='utf-8') as f:
+        index = json.load(f)
+    
+    # 查找文章
+    article = None
+    for a in index['articles']:
+        if a['id'] == article_id:
+            article = a
+            break
+    
+    if not article:
+        print(f"❌ 未找到文章：{article_id}")
+        return
+    
+    # 获取文件路径
+    html_path = article['files'].get('html')
+    cover_path = article['files'].get('cover')
+    title = article['title']
+    
+    if not html_path or not cover_path:
+        print(f"❌ 文章文件不完整")
+        print(f"   HTML: {html_path}")
+        print(f"   封面：{cover_path}")
+        return
+    
+    print(f"📄 准备推送文章：{title}")
+    print(f"   HTML: {html_path}")
+    print(f"   封面：{cover_path}\n")
+    
+    # 推送
+    result = publish_draft(html_path, cover_path, title)
+    
+    # 更新索引（记录推送信息）
+    if result:
+        for a in index['articles']:
+            if a['id'] == article_id:
+                a['publish'] = {
+                    'published': True,
+                    'published_at': datetime.now().isoformat(),
+                    'media_id': result['media_id'],
+                    'title_on_platform': title
+                }
+                break
+        
+        # 保存索引
+        index['updated'] = datetime.now().isoformat()
+        with open(index_file, 'w', encoding='utf-8') as f:
+            json.dump(index, f, ensure_ascii=False, indent=2)
+        
+        print(f"\n✅ 索引已更新")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='发布文章到公众号草稿箱')
-    parser.add_argument('--html', type=str, required=True, help='HTML 文件路径')
-    parser.add_argument('--cover', type=str, required=True, help='封面图路径')
+    parser.add_argument('--html', type=str, help='HTML 文件路径')
+    parser.add_argument('--cover', type=str, help='封面图路径')
     parser.add_argument('--title', type=str, help='文章标题')
+    parser.add_argument('--article-id', type=str, help='文章 ID（自动从索引读取文件）')
     
     args = parser.parse_args()
     
-    publish_draft(args.html, args.cover, args.title)
+    if args.article_id:
+        publish_by_article_id(args.article_id)
+    else:
+        publish_draft(args.html, args.cover, args.title)

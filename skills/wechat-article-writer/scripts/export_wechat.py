@@ -8,6 +8,7 @@ export_wechat.py - 导出微信公众号格式文章
 import argparse
 import os
 import re
+import json
 from datetime import datetime
 
 # 微信公众号支持的样式（经过验证）
@@ -131,10 +132,29 @@ def markdown_to_html(md_content, theme="default"):
     
     return '\n'.join(html_lines)
 
-def export_to_wechat(md_filepath, theme="default", output_dir=None):
+def export_to_wechat(md_filepath, theme="default", output_dir=None, article_id=None):
     """导出为微信公众号格式"""
     # 加载 Markdown
     md_content = load_markdown(md_filepath)
+    
+    # 如果有 article_id，加载图片并替换
+    if article_id:
+        images_dir = os.path.join(os.path.dirname(md_filepath), '..', 'images', article_id)
+        metadata_file = os.path.join(images_dir, 'metadata.json')
+        
+        if os.path.exists(metadata_file):
+            with open(metadata_file, 'r', encoding='utf-8') as f:
+                images = json.load(f)
+            
+            print(f"📸 加载到 {len(images)} 张图片...")
+            
+            # 替换 Markdown 图片标记为 HTML img 标签
+            for img in images:
+                markdown_img = f"![{img.get('description', '')}]({img['filename']})"
+                html_img = f'<img src="{img["path"]}" alt="{img.get("description", "")}" style="max-width: 100%; display: block; margin: 20px auto;"/>'
+                md_content = md_content.replace(markdown_img, html_img)
+            
+            print(f"✅ 图片已嵌入")
     
     # 转换为 HTML（样式内联化）
     html_content = markdown_to_html(md_content, theme)
@@ -171,11 +191,13 @@ if __name__ == "__main__":
                        choices=['default', 'medical', 'tech'],
                        help='主题样式')
     parser.add_argument('--output', type=str, default=None, help='输出目录（可选）')
+    parser.add_argument('--article-id', type=str, default=None, help='文章 ID（用于加载图片）')
     
     args = parser.parse_args()
     
     export_to_wechat(
         md_filepath=args.input,
         theme=args.theme,
-        output_dir=args.output
+        output_dir=args.output,
+        article_id=args.article_id
     )
