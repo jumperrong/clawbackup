@@ -71,6 +71,17 @@
             display: block;
         }
         
+        .no-cover {
+            width: 100%;
+            height: 200px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+        }
+        
         .content {
             padding: 30px;
         }
@@ -336,7 +347,7 @@
                 let markdown = xhr.responseText;
                 
                 // 修复图片路径：将绝对路径转换为相对路径
-                markdown = markdown.replace(/!\[([^\]]*)\]\(\/Users\/jumpermac\/\.openclaw\/workspace\/skills\/wechat-article-writer\/scripts\//g, '![$1](./');
+                markdown = markdown.replace(/!\[([^\]]*)\]\(\/Users\/jumpermac\/\.openclaw\/workspace\/skills\/wechat-article-writer\/scripts\//g, '![$1](scripts/output/');
                 
                 // 解析 Markdown（简化版）
                 const html = parseMarkdown(markdown);
@@ -383,8 +394,14 @@
             const theme = document.getElementById('themeSelect').value;
             const style = themeStyles[theme];
             
+            // 获取封面图路径
+            const coverPath = currentArticle.cover || '';
+            const coverHtml = coverPath ? 
+                `<img class="header-cover" src="${coverPath}" alt="封面" onerror="this.outerHTML='<div class=\\'no-cover\\'>封面图加载失败，请检查文件是否存在</div>'">` : 
+                '<div class="no-cover">无封面图</div>';
+            
             document.getElementById('previewContainer').innerHTML = `
-                <img class="header-cover" src="output/images/cover_header.jpg" alt="封面" onerror="this.style.display='none'">
+                ${coverHtml}
                 <div class="content">
                     <div class="meta">
                         <img class="avatar" src="https://via.placeholder.com/40" alt="头像">

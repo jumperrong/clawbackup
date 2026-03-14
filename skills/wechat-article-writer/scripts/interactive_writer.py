@@ -17,6 +17,7 @@ sys.path.insert(0, script_dir)
 from config_loader import get_config
 from session_manager import SessionManager
 from image_manager import ImageManager
+from prompt_optimizer import PromptOptimizer
 
 
 class InteractiveWriter:
@@ -242,12 +243,16 @@ class InteractiveWriter:
         image_prompts = self._generate_images()
         self.session['images'] = image_prompts
         
+        # 优化提示词（确保与文章主旨匹配）
+        print("🔍 正在优化提示词，确保与文章主旨匹配...\n")
+        optimized_prompts = self._optimize_image_prompts(image_prompts)
+        
         # 使用图片管理器生成并保存图片
-        print(f"✅ 生成了 {len(image_prompts)} 个配图提示词")
+        print(f"✅ 生成了 {len(optimized_prompts)} 个优化后的配图提示词")
         print(f"🎨 开始调用豆包 API 生成图片...\n")
         
         # 批量生成图片
-        generated_images = self.image_manager.batch_generate(image_prompts)
+        generated_images = self.image_manager.batch_generate(optimized_prompts)
         
         # 记录到会话日志
         for img in generated_images:
@@ -473,6 +478,72 @@ class InteractiveWriter:
         """从描述生成提示词"""
         # TODO: 调用 AI 生成
         return f"根据描述生成：{desc}"
+    
+    def _optimize_image_prompts(self, prompts):
+        """
+        优化配图提示词，确保与文章主旨匹配
+        
+        Args:
+            prompts: 原始提示词列表
+        
+        Returns:
+            list: 优化后的提示词列表
+        """
+        # 临时保存提示词到文件，供优化器使用
+        temp_prompts_file = os.path.join(script_dir, 'output', 'temp_prompts.json')
+        os.makedirs(os.path.dirname(temp_prompts_file), exist_ok=True)
+        
+        with open(temp_prompts_file, 'w', encoding='utf-8') as f:
+            json.dump(prompts, f, ensure_ascii=False, indent=2)
+        
+        # 创建临时图片元数据
+        temp_metadata = []
+        for i, prompt in enumerate(prompts, 1):
+            temp_metadata.append({
+                'type': 'image',
+                'index': i,
+                'description': prompt.get('description', ''),
+                'prompt': prompt.get('prompt', ''),
+                'position': prompt.get('position', '')
+            })
+        
+        temp_meta_file = os.path.join(script_dir, 'output', 'temp_metadata.json')
+        with open(temp_meta_file, 'w', encoding='utf-8') as f:
+            json.dump(temp_metadata, f, ensure_ascii=False, indent=2)
+        
+        # 使用优化器分析
+        article_path = os.path.join(script_dir, 'output', 'articles', f'article_{self.article_id}.md')
+        
+        # 查找文章文件
+        if not os.path.exists(article_path):
+            articles_dir = os.path.join(script_dir, 'output', 'articles')
+            for f in os.listdir(articles_dir):
+                if self.article_id in f and f.endswith('.md'):
+                    article_path = os.path.join(articles_dir, f)
+                    break
+        
+        if os.path.exists(article_path):
+            optimizer = PromptOptimizer(article_path, os.path.join(script_dir, 'output', 'images', self.article_id))
+            
+            # 获取优化建议
+            report = optimizer.analyze_current_prompts()
+            
+            if report['suggestions']:
+                print(f"💡 发现 {len(report['suggestions'])} 个提示词需要优化\n")
+                
+                # 应用优化
+                optimized_prompts = prompts.copy()
+                for suggestion in report['suggestions']:
+                    idx = int(suggestion['filename'].split('_')[1]) - 1
+                    if 0 <= idx < len(optimized_prompts):
+                        optimized_prompts[idx]['prompt'] = suggestion['optimized']
+                        print(f"   ✅ 配图{idx+1}: {suggestion['reason']}")
+                
+                print()
+                return optimized_prompts
+        
+        # 如果没有优化建议，返回原始提示词
+        return prompts
     
     def _save_article(self):
         """保存文章"""
