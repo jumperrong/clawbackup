@@ -51,16 +51,14 @@ git push origin main 2>&1 | tee -a "$LOG_FILE"
 
 PUSH_STATUS=$?
 
-# 通过 pending-notify.txt 发送钉钉通知
+# 发送钉钉通知
 send_dingtalk_notification() {
     local status="$1"
     local message="$2"
     echo "[$TIMESTAMP] 📬 准备发送钉钉通知：[$status] $message" | tee -a "$LOG_FILE"
     
-    # 写入 pending 通知文件，由 heartbeat 检查时通过钉钉发送
-    local NOTIFY_FILE="/Users/jumpermac/.openclaw/workspace/pending-notify.txt"
-    echo "$status - $message" >> "$NOTIFY_FILE"
-    echo "[$TIMESTAMP] 📝 通知已写入 $NOTIFY_FILE" | tee -a "$LOG_FILE"
+    # 调用钉钉通知脚本
+    node /Users/jumpermac/.openclaw/workspace/scripts/send-dingtalk-notify.js "$status - $message" >> "$LOG_FILE" 2>&1
 }
 
 if [ $PUSH_STATUS -eq 0 ]; then
