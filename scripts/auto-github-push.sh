@@ -51,21 +51,24 @@ git push origin main 2>&1 | tee -a "$LOG_FILE"
 
 PUSH_STATUS=$?
 
-# 通过 openclaw message 工具发送钉钉通知
+# 通过 pending-notify.txt 发送钉钉通知
 send_dingtalk_notification() {
     local status="$1"
     local message="$2"
-    # 使用 openclaw message 工具发送到钉钉通道
-    # 注意：实际执行时由 cron job 通过 session 发送
-    echo "[$TIMESTAMP] 📬 钉钉通知：[$status] $message" | tee -a "$LOG_FILE"
+    echo "[$TIMESTAMP] 📬 准备发送钉钉通知：[$status] $message" | tee -a "$LOG_FILE"
+    
+    # 写入 pending 通知文件，由 heartbeat 检查时通过钉钉发送
+    local NOTIFY_FILE="/Users/jumpermac/.openclaw/workspace/pending-notify.txt"
+    echo "$status - $message" >> "$NOTIFY_FILE"
+    echo "[$TIMESTAMP] 📝 通知已写入 $NOTIFY_FILE" | tee -a "$LOG_FILE"
 }
 
 if [ $PUSH_STATUS -eq 0 ]; then
     echo "[$TIMESTAMP] ✅ 推送成功！" | tee -a "$LOG_FILE"
-    send_dingtalk_notification "✅成功" "GitHub 自动推送完成"
+    send_dingtalk_notification "✅ GitHub 推送成功" "提交已推送到 github.com:jumperrong/clawbackup.git"
 else
     echo "[$TIMESTAMP] ❌ 推送失败，请检查网络连接和仓库权限" | tee -a "$LOG_FILE"
-    send_dingtalk_notification "❌失败" "GitHub 自动推送失败，请检查网络或权限"
+    send_dingtalk_notification "❌ GitHub 推送失败" "请检查网络或权限配置"
     exit 1
 fi
 
