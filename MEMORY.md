@@ -50,6 +50,45 @@ _这是 curated memories， distilled essence，不是 raw logs._
 1. **飞书配置移除** - 完全清理飞书相关配置，只用钉钉
 2. **openclaw-dingtalk 移除** - 卸载废弃的旧钉钉插件，只用 dingtalk-connector
 
+### 2026-03-15 钉钉通道会话路由修复
+
+**问题：** 钉钉消息会话路由不稳定，WebUI 测试后消息被路由到 heartbeat group
+
+**根本原因：** 钉钉连接器 v0.7.8 的设计问题
+- 插件使用 `sessionKey: sessionContextJson` 调用 Gateway
+- Gateway 根据 `X-OpenClaw-Memory-User` header 创建 `openai-user` 会话
+- 这是插件内部路由逻辑，配置无法完全解决
+
+**解决方案：**
+1. 配置 `separateSessionByConversation: false` - 按用户维度路由
+2. 移除 `sessionTimeout` - 禁用会话超时
+3. 移除 `asyncMode` - 使用 AI Card 模式
+4. 接受 `openai-user` 会话作为钉钉工作会话
+5. 清理空壳 `dingtalk-connector:direct` 会话
+
+**最终配置：**
+```json
+{
+  "channels": {
+    "dingtalk-connector": {
+      "enabled": true,
+      "separateSessionByConversation": false,
+      "dmPolicy": "open",
+      "allowFrom": ["*"]
+    }
+  }
+}
+```
+
+**会话状态（2 个）：**
+1. `agent:main:main` - WebChat 主会话（heartbeat、WebUI）
+2. `agent:main:openai-user:{...}` - 钉钉工作会话（实际使用）
+
+**功能确认：**
+- ✅ 钉钉消息正常接收和回复
+- ✅ 会话不会超时重开
+- ✅ WebUI 测试不影响钉钉路由
+
 ---
 
 ## 🎯 项目与兴趣
