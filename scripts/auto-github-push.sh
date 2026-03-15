@@ -49,10 +49,23 @@ git commit -m "$COMMIT_MSG" 2>&1 | tee -a "$LOG_FILE" || {
 echo "[$TIMESTAMP] 推送到 GitHub..." | tee -a "$LOG_FILE"
 git push origin main 2>&1 | tee -a "$LOG_FILE"
 
-if [ $? -eq 0 ]; then
+PUSH_STATUS=$?
+
+# 通过 openclaw message 工具发送钉钉通知
+send_dingtalk_notification() {
+    local status="$1"
+    local message="$2"
+    # 使用 openclaw message 工具发送到钉钉通道
+    # 注意：实际执行时由 cron job 通过 session 发送
+    echo "[$TIMESTAMP] 📬 钉钉通知：[$status] $message" | tee -a "$LOG_FILE"
+}
+
+if [ $PUSH_STATUS -eq 0 ]; then
     echo "[$TIMESTAMP] ✅ 推送成功！" | tee -a "$LOG_FILE"
+    send_dingtalk_notification "✅成功" "GitHub 自动推送完成"
 else
     echo "[$TIMESTAMP] ❌ 推送失败，请检查网络连接和仓库权限" | tee -a "$LOG_FILE"
+    send_dingtalk_notification "❌失败" "GitHub 自动推送失败，请检查网络或权限"
     exit 1
 fi
 
