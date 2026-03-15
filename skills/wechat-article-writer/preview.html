@@ -17,6 +17,69 @@
             padding: 20px;
         }
         
+        .header {
+            max-width: 800px;
+            margin: 0 auto 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .article-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .article-btn {
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 200px;
+            text-align: left;
+        }
+        
+        .article-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .article-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .article-btn .status {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+            display: inline-block;
+        }
+        
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-ready {
+            background: #d4edda;
+            color: #155724;
+        }
+        
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -50,6 +113,8 @@
             padding-bottom: 20px;
             border-bottom: 1px solid #eee;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
         .avatar {
@@ -76,6 +141,20 @@
             margin-top: 4px;
         }
         
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            font-size: 12px;
+            padding: 4px 10px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            color: #666;
+        }
+        
         .article-body {
             font-size: 16px;
             line-height: 1.8;
@@ -90,21 +169,19 @@
             border-left: 4px solid #ff6b6b;
         }
         
+        .article-body h3 {
+            font-size: 16px;
+            color: #444;
+            margin: 20px 0 12px;
+            font-weight: 600;
+        }
+        
         .article-body p {
             margin: 15px 0;
         }
         
         .article-body strong {
             font-weight: 600;
-        }
-        
-        .article-body blockquote {
-            background: #f9f9f9;
-            border-left: 4px solid #ddd;
-            padding: 15px 20px;
-            margin: 20px 0;
-            color: #666;
-            font-style: italic;
         }
         
         .article-body ul, .article-body ol {
@@ -119,205 +196,313 @@
         .article-body img {
             max-width: 100%;
             height: auto;
+            display: block;
+            margin: 20px auto;
             border-radius: 8px;
+        }
+        
+        .article-body blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
             margin: 20px 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: #555;
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .article-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .article-body th, .article-body td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .article-body th {
+            background: #f5f5f5;
+            font-weight: 600;
         }
         
         .share-cover-section {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px dashed #eee;
+            padding: 30px;
+            background: #fafafa;
+            border-top: 1px solid #eee;
         }
         
         .share-cover-section h3 {
             font-size: 16px;
-            color: #666;
+            color: #333;
             margin-bottom: 15px;
         }
         
         .share-cover {
             width: 383px;
             height: 383px;
+            object-fit: cover;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
-        .file-info {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 20px;
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 60px 20px;
+            color: #dc3545;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: transform 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .refresh-btn.spinning {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .meta-info {
+            background: #f8f9ff;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
             font-size: 13px;
             color: #666;
         }
         
-        .file-info p {
-            margin: 5px 0;
-        }
-        
-        .tag {
-            display: inline-block;
-            background: #ff6b6b;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-right: 8px;
-        }
-        
-        .article-selector {
-            background: #fff;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .article-selector h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        .article-selector button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            margin-right: 10px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .article-selector button:hover {
-            background: #5568d3;
-        }
-        
-        .article-selector button.active {
-            background: #4c51bf;
+        .meta-info span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="article-selector">
-        <h3>📝 选择文章预览</h3>
-        <button onclick="loadArticle(1)" id="btn1" class="active">文章 1：臀肌挛缩康复</button>
-        <button onclick="loadArticle(2)" id="btn2">文章 2：髂胫束综合症</button>
+    <div class="header">
+        <h1>📱 微信公众号文章预览</h1>
+        <div class="article-selector" id="article-selector">
+            <!-- 文章按钮将动态生成 -->
+        </div>
     </div>
     
     <div class="container" id="article-container">
-        <!-- 内容将通过 JS 动态加载 -->
+        <div class="loading">
+            <p>🔄 正在加载文章列表...</p>
+        </div>
     </div>
     
+    <button class="refresh-btn" onclick="loadIndex()" title="刷新文章列表">🔄</button>
+    
     <script>
-        const articles = {
-            1: {
-                title: "臀肌挛缩不用开刀？这份非手术康复指南，90% 的人都不知道！",
-                cover: "./scripts/output/images/cover_20260309_230002.jpg",
-                shareCover: "./scripts/output/images/cover_20260309_230025.jpg",
-                md: "./scripts/output/articles/article_20260309_225017.md",
-                wordCount: 2659,
-                style: "干货",
-                time: "2026-03-09 22:50"
-            },
-            2: {
-                title: "一拉就痛？膝盖外侧"筋"绷紧了！髂胫束综合征自救全攻略 🦵",
-                cover: "./scripts/output/images/cover_20260309_230735.jpg",
-                shareCover: "./scripts/output/images/cover_20260309_230756.jpg",
-                md: "./scripts/output/articles/article_20260309_230714.md",
-                wordCount: 2949,
-                style: "干货",
-                time: "2026-03-09 23:07"
-            }
-        };
+        let articles = [];
+        let currentArticleId = null;
         
-        let currentArticle = 1;
-        
-        function loadArticle(id) {
-            currentArticle = id;
-            const article = articles[id];
+        // 加载 index.json
+        async function loadIndex() {
+            const btn = document.querySelector('.refresh-btn');
+            btn.classList.add('spinning');
             
-            // 更新按钮状态
-            document.getElementById('btn1').classList.toggle('active', id === 1);
-            document.getElementById('btn2').classList.toggle('active', id === 2);
-            
-            // 加载文章内容
-            fetch(article.md)
-                .then(response => response.text())
-                .then(markdown => {
-                    // Markdown 转 HTML
-                    let html = markdown
-                        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                        .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-                        .replace(/\*(.*)\*/gim, '<em>$1</em>')
-                        .replace(/^- (.*$)/gim, '<li>$1</li>')
-                        .replace(/!\[(.*?)\]\((.*?)\)/gim, '<img src="$2" alt="$1">')
-                        .replace(/\n/gim, '<br>');
-                    
-                    renderArticle(article, html);
-                })
-                .catch(err => {
-                    console.error('加载失败:', err);
+            try {
+                const response = await fetch('./scripts/output/index.json?t=' + Date.now());
+                if (!response.ok) throw new Error('无法加载 index.json');
+                
+                const data = await response.json();
+                articles = data.articles || [];
+                
+                // 同时检查 previews 目录的草稿
+                try {
+                    const previewsResponse = await fetch('./scripts/output/previews/list.json?t=' + Date.now());
+                    if (previewsResponse.ok) {
+                        const previewsData = await previewsResponse.json();
+                        const previewArticles = previewsData.articles || [];
+                        // 合并草稿文章
+                        articles = [...previewArticles, ...articles];
+                    }
+                } catch (e) {
+                    console.log('无草稿文章或 previews/list.json 不存在');
+                }
+                
+                renderSelector();
+                
+                if (articles.length > 0) {
+                    // 默认选择最新文章
+                    loadArticle(articles[0].id);
+                } else {
                     document.getElementById('article-container').innerHTML = `
-                        <div class="content">
-                            <p style="color: red;">文章加载失败，请检查文件路径</p>
+                        <div class="loading">
+                            <p>📭 暂无文章</p>
+                            <p style="margin-top: 10px; font-size: 14px;">开始创作你的第一篇文章吧！</p>
                         </div>
                     `;
-                });
+                }
+            } catch (error) {
+                console.error('加载失败:', error);
+                document.getElementById('article-container').innerHTML = `
+                    <div class="error">
+                        <p>❌ 加载失败</p>
+                        <p style="margin-top: 10px; font-size: 14px;">请确保在正确的目录下打开此页面</p>
+                        <p style="margin-top: 5px; font-size: 12px; color: #999;">${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.classList.remove('spinning');
+            }
         }
         
-        function renderArticle(article, content) {
+        // 渲染文章选择器
+        function renderSelector() {
+            const selector = document.getElementById('article-selector');
+            selector.innerHTML = articles.map(article => {
+                const isActive = article.id === currentArticleId ? 'active' : '';
+                const statusClass = article.status === 'draft' ? 'status-draft' : 'status-ready';
+                const statusText = article.status === 'draft' ? '草稿' : '已完成';
+                const title = article.title || '无标题';
+                const shortTitle = title.length > 20 ? title.substring(0, 20) + '...' : title;
+                
+                return `
+                    <button class="article-btn ${isActive}" onclick="loadArticle('${article.id}')">
+                        ${shortTitle}
+                        <span class="status ${statusClass}">${statusText}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+        
+        // 加载文章
+        async function loadArticle(articleId) {
+            currentArticleId = articleId;
+            const article = articles.find(a => a.id === articleId);
+            
+            if (!article) {
+                document.getElementById('article-container').innerHTML = `
+                    <div class="error">
+                        <p>❌ 文章不存在</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 更新选择器状态
+            renderSelector();
+            
+            // 读取 Markdown 文件
+            try {
+                // index.json 中的路径是相对于 scripts/output/ 的
+                const basePath = 'scripts/output/';
+                const mdPath = article.files?.markdown ? basePath + article.files.markdown : `${basePath}articles/article_${articleId}.md`;
+                const response = await fetch('./' + mdPath + '?t=' + Date.now());
+                if (!response.ok) throw new Error('无法加载文章内容');
+                
+                const markdown = await response.text();
+                renderArticle(article, markdown);
+            } catch (error) {
+                console.error('加载文章失败:', error);
+                document.getElementById('article-container').innerHTML = `
+                    <div class="error">
+                        <p>❌ 文章加载失败</p>
+                        <p style="margin-top: 10px; font-size: 14px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 渲染文章
+        function renderArticle(article, markdown) {
+            // Markdown 转 HTML
+            let html = markdown
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                .replace(/^- (.*$)/gim, '<li>$1</li>')
+                .replace(/^(\d+)\. (.*$)/gim, '<ol><li>$2</li></ol>')
+                .replace(/!\[(.*?)\]\((.*?)\)/gim, '<img src="./$2" alt="$1">')
+                .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank">$1</a>')
+                .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
+                .replace(/\n/gim, '<br>');
+            
+            // 修复 ol 标签
+            html = html.replace(/<\/ol><ol>/gim, '');
+            
+            const basePath = 'scripts/output/';
+            const coverPath = article.files?.cover ? basePath + article.files.cover : `${basePath}images/cover_${article.id}.jpg`;
+            const shareCoverPath = article.files?.shareCover ? basePath + article.files.shareCover : coverPath;
+            const stats = article.stats || {};
+            const tags = article.tags || [];
+            
             document.getElementById('article-container').innerHTML = `
-                <img class="header-cover" src="${article.cover}" alt="文章封面">
+                <img class="header-cover" src="./${coverPath}" alt="文章封面">
+                
+                <div class="meta-info">
+                    <span>📊 ${stats.words || 0} 字</span>
+                    <span>🎨 ${stats.style || '通用'}</span>
+                    <span>🖼️ ${stats.images || 0} 图</span>
+                    <span>📅 ${article.date || ''}</span>
+                    <span>${article.status === 'draft' ? '✏️ 草稿' : '✅ 已完成'}</span>
+                </div>
                 
                 <div class="content">
-                    <h1 class="title">${article.title}</h1>
+                    <h1 class="title">${article.title || '无标题'}</h1>
                     
                     <div class="meta">
                         <div class="avatar"></div>
                         <div class="author-info">
                             <div class="author-name">AI 助手</div>
-                            <div class="publish-time">${article.time} · 阅读约 ${Math.ceil(article.wordCount / 300)} 分钟</div>
+                            <div class="publish-time">${article.date || ''} · 阅读约 ${Math.ceil((stats.words || 0) / 300)} 分钟</div>
                         </div>
-                        <div>
-                            <span class="tag">${article.style}</span>
-                            <span class="tag">康复</span>
-                            <span class="tag">健康</span>
+                        <div class="tags">
+                            ${tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                         </div>
                     </div>
                     
                     <div class="article-body">
-                        ${content}
+                        ${html}
                     </div>
-                    
-                    <div class="share-cover-section">
-                        <h3>📱 分享封面预览（1:1，用于朋友圈/聊天分享）</h3>
-                        <img class="share-cover" src="${article.shareCover}" alt="分享封面">
-                        
-                        <div class="file-info">
-                            <p><strong>📄 文章信息</strong></p>
-                            <p>字数：${article.wordCount} 字</p>
-                            <p>风格：${article.style}</p>
-                            <p>生成时间：${article.time}</p>
-                            <p>文件：${article.md.split('/').pop()}</p>
-                        </div>
-                        
-                        <div class="file-info">
-                            <p><strong>🖼️ 封面图信息</strong></p>
-                            <p>头条封面：900×383 像素（output/images/cover_xxx_header.jpg）</p>
-                            <p>分享封面：383×383 像素（output/images/cover_xxx_share.jpg）</p>
-                            <p>AI 模型：豆包 Seedream 4.5</p>
-                        </div>
-                    </div>
+                </div>
+                
+                <div class="share-cover-section">
+                    <h3>📱 分享封面预览（1:1，用于朋友圈/聊天分享）</h3>
+                    <img class="share-cover" src="./${shareCoverPath}" alt="分享封面">
                 </div>
             `;
         }
         
-        // 默认加载第一篇文章
-        loadArticle(1);
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', loadIndex);
+        
+        // 每 30 秒自动刷新一次文章列表
+        setInterval(loadIndex, 30000);
     </script>
 </body>
 </html>
